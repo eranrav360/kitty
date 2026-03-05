@@ -1,5 +1,5 @@
 export const HE = {
-  APP_TITLE: 'ראטה!',
+  APP_TITLE: 'חתחתול!',
   APP_SUBTITLE: 'משחק הקלפים',
 
   ENTER_NAME: 'שם השחקן',
@@ -32,7 +32,7 @@ export const HE = {
   YOUR_TURN: 'התור שלך!',
   OPPONENT_TURN: (name) => `תור של ${name}`,
   LAST_ROUND: '⚡ סיבוב אחרון!',
-  LAST_ROUND_DETAIL: (name) => `${name} קרא ראטה! לכולם נשאר עוד תור`,
+  LAST_ROUND_DETAIL: (name) => `${name} קרא חתחתול! לכולם נשאר עוד תור`,
 
   DECK_LABEL: 'חפיסה',
   DISCARD_LABEL: 'פסולת',
@@ -60,9 +60,9 @@ export const HE = {
   CARD_DRAW2: '×2',
   CARD_UNKNOWN: '?',
 
-  CALL_RATA: '!ראטה',
-  RATA_CONFIRM: 'להכריז ראטה? המשחק יסתיים לאחר תור אחד לכל שחקן',
-  RATA_YES: 'כן, ראטה!',
+  CALL_RATA: '!חתחתול',
+  RATA_CONFIRM: 'להכריז חתחתול? המשחק יסתיים לאחר תור אחד לכל שחקן',
+  RATA_YES: 'כן, חתחתול!',
   RATA_NO: 'ביטול',
 
   GAME_OVER: 'המשחק נגמר!',

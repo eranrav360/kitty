@@ -420,7 +420,7 @@ function handleUseDrawTwo(io, socket, { roomCode }) {
 function handleCallRata(io, socket, { roomCode }) {
   const room = getRoom(roomCode);
   if (!room) return;
-  if (room.phase !== PHASES.PLAYING) return socket.emit('errorOccurred', { message: 'לא ניתן לקרוא ראטה עכשיו' });
+  if (room.phase !== PHASES.PLAYING) return socket.emit('errorOccurred', { message: 'לא ניתן לקרוא חתחתול עכשיו' });
   if (room.turnPhase !== TURN_PHASES.IDLE) return socket.emit('errorOccurred', { message: 'סיים את התור שלך קודם' });
 
   const caller = room.players.find(p => p.socketId === socket.id);
