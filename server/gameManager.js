@@ -426,16 +426,12 @@ function handleCallRata(io, socket, { roomCode }) {
   const caller = room.players.find(p => p.socketId === socket.id);
   if (!caller) return;
 
-  // Must be the player whose turn just ended (i.e., it's now the NEXT player's turn)
-  // Actually per rules: "after their turn" — we allow calling during IDLE when it's NOT your turn too.
-  // Simpler implementation: any player can call Rata during ANY player's IDLE phase.
-
   caller.hasCalledRata = true;
   room.phase = PHASES.LAST_ROUND;
   room.lastRoundCallerId = caller.playerId;
   room.lastRoundStarterIndex = room.currentPlayerIndex;
 
-  // The caller already had their turn; mark them as acted
+  // Caller never gets an extra turn — mark them as already acted
   room.playersWhoActedInLastRound = [caller.playerId];
 
   io.to(room.roomCode).emit('rataCalled', {
@@ -443,7 +439,14 @@ function handleCallRata(io, socket, { roomCode }) {
     callerPlayerId: caller.playerId,
   });
 
-  broadcastState(io, room);
+  // If it's the caller's own IDLE turn, skip it immediately so only the
+  // remaining players each get one last turn.
+  const currentPlayer = room.players[room.currentPlayerIndex];
+  if (currentPlayer.playerId === caller.playerId) {
+    advanceTurn(io, room);
+  } else {
+    broadcastState(io, room);
+  }
 }
 
 function finishTurn(io, room, currentPlayer) {
