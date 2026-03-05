@@ -35,6 +35,10 @@ export function useSocket(dispatch) {
       dispatch({ type: ACTION_TYPES.RATA_CALLED, payload: data });
     });
 
+    socket.on('roundEnded', (data) => {
+      dispatch({ type: ACTION_TYPES.ROUND_ENDED, payload: data });
+    });
+
     socket.on('gameEnded', (data) => {
       dispatch({ type: ACTION_TYPES.GAME_ENDED, payload: data });
     });
@@ -54,6 +58,7 @@ export function useSocket(dispatch) {
       socket.off('cardDrawn');
       socket.off('peekResult');
       socket.off('rataCalled');
+      socket.off('roundEnded');
       socket.off('gameEnded');
       socket.off('errorOccurred');
     };

@@ -30,6 +30,7 @@ io.on('connection', (socket) => {
   socket.on('joinRoom', (data) => gm.joinRoom(io, socket, data));
   socket.on('rejoinRoom', (data) => gm.rejoinRoom(io, socket, data));
   socket.on('startGame', (data) => gm.startGame(io, socket, data));
+  socket.on('startNextRound', (data) => gm.startNextRound(io, socket, data));
   socket.on('peekDone', (data) => gm.peekDone(io, socket, data));
 
   socket.on('drawFromDeck', (data) => gm.handleDrawFromDeck(io, socket, data));

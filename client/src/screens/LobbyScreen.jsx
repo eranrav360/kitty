@@ -8,6 +8,7 @@ export default function LobbyScreen() {
   const { state, dispatch } = useGame();
   const [name, setName] = useState('');
   const [code, setCode] = useState('');
+  const [rounds, setRounds] = useState(3);
   const [localError, setLocalError] = useState('');
 
   function validate(requireCode) {
@@ -19,10 +20,11 @@ export default function LobbyScreen() {
 
   function handleCreate() {
     if (!validate(false)) return;
-    socket.emit('createRoom', { playerName: name.trim() });
-    socket.once('roomCreated', ({ roomCode, playerId, playerName }) => {
+    socket.emit('createRoom', { playerName: name.trim(), totalRounds: rounds });
+    socket.once('roomCreated', ({ roomCode, playerId, playerName, totalRounds }) => {
       dispatch({ type: ACTION_TYPES.SET_MY_IDENTITY, payload: { playerId, playerName, isHost: true } });
       dispatch({ type: ACTION_TYPES.SET_ROOM_CODE, payload: roomCode });
+      dispatch({ type: ACTION_TYPES.SET_TOTAL_ROUNDS, payload: totalRounds });
       dispatch({ type: ACTION_TYPES.SET_WAITING_PLAYERS, payload: [{ playerId, name: playerName, isHost: true }] });
     });
   }
@@ -30,9 +32,10 @@ export default function LobbyScreen() {
   function handleJoin() {
     if (!validate(true)) return;
     socket.emit('joinRoom', { roomCode: code.trim().toUpperCase(), playerName: name.trim() });
-    socket.once('roomJoined', ({ roomCode, playerId, playerName }) => {
+    socket.once('roomJoined', ({ roomCode, playerId, playerName, totalRounds }) => {
       dispatch({ type: ACTION_TYPES.SET_MY_IDENTITY, payload: { playerId, playerName, isHost: false } });
       dispatch({ type: ACTION_TYPES.SET_ROOM_CODE, payload: roomCode });
+      dispatch({ type: ACTION_TYPES.SET_TOTAL_ROUNDS, payload: totalRounds });
     });
   }
 
@@ -57,6 +60,20 @@ export default function LobbyScreen() {
           maxLength={20}
           onKeyDown={e => e.key === 'Enter' && handleCreate()}
         />
+
+        <label className="input-label">{HE.ROUNDS_LABEL}</label>
+        <div className="rounds-selector">
+          {[1,2,3,4,5,6,7,8,9,10].map(n => (
+            <button
+              key={n}
+              className={`rounds-btn ${rounds === n ? 'rounds-btn-active' : ''}`}
+              onClick={() => setRounds(n)}
+              type="button"
+            >
+              {n}
+            </button>
+          ))}
+        </div>
 
         <button className="btn btn-primary" onClick={handleCreate}>
           {HE.CREATE_ROOM}

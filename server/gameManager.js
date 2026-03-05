@@ -6,6 +6,7 @@ const {
   markInitialPeek,
   drawFromDeck,
   replacePowerCardsInHands,
+  computeScores,
   buildClientState,
   buildFinalState,
 } = require('./gameLogic');
@@ -67,20 +68,74 @@ function advanceTurn(io, room) {
 }
 
 function endGame(io, room) {
-  room.phase = PHASES.ENDED;
   replacePowerCardsInHands(room);
-  const finalState = buildFinalState(room);
-  io.to(room.roomCode).emit('gameEnded', finalState);
+
+  // Compute this round's scores and add to cumulative
+  const roundScores = computeScores(room);
+  roundScores.forEach(({ playerId, score }) => {
+    room.cumulativeScores[playerId] = (room.cumulativeScores[playerId] || 0) + score;
+  });
+
+  // Build revealed hands for display
+  const players = room.players.map(player => ({
+    playerId: player.playerId,
+    name: player.name,
+    hand: player.hand.map(card => ({
+      id: card.id,
+      type: card.type,
+      value: card.value,
+      isKnownToMe: true,
+      isRevealed: true,
+    })),
+    roundScore: roundScores.find(s => s.playerId === player.playerId)?.score ?? 0,
+    totalScore: room.cumulativeScores[player.playerId] || 0,
+  }));
+
+  // Determine cumulative standings
+  const cumulativeScores = room.players.map(p => ({
+    playerId: p.playerId,
+    name: p.name,
+    totalScore: room.cumulativeScores[p.playerId] || 0,
+  }));
+
+  if (room.currentRound < room.totalRounds) {
+    // More rounds to go — emit roundEnded and wait for host to start next
+    room.phase = PHASES.ROUND_END;
+    io.to(room.roomCode).emit('roundEnded', {
+      currentRound: room.currentRound,
+      totalRounds: room.totalRounds,
+      players,
+      cumulativeScores,
+    });
+  } else {
+    // Final round — determine winners by cumulative score and end game
+    room.phase = PHASES.ENDED;
+    const minScore = Math.min(...cumulativeScores.map(s => s.totalScore));
+    const winners = cumulativeScores.filter(s => s.totalScore === minScore).map(s => s.playerId);
+    players.forEach(p => { p.isWinner = winners.includes(p.playerId); });
+
+    io.to(room.roomCode).emit('gameEnded', {
+      roomCode: room.roomCode,
+      phase: PHASES.ENDED,
+      players,
+      winners,
+      isTie: winners.length > 1,
+      currentRound: room.currentRound,
+      totalRounds: room.totalRounds,
+      cumulativeScores,
+    });
+  }
 }
 
 // ── public handlers ───────────────────────────────────────────────────────────
 
-function createRoom(io, socket, { playerName }) {
+function createRoom(io, socket, { playerName, totalRounds }) {
   if (!playerName?.trim()) {
     return socket.emit('errorOccurred', { message: 'נא להכניס שם' });
   }
   const roomCode = generateRoomCode();
   const playerId = uuidv4();
+  const rounds = Math.min(Math.max(parseInt(totalRounds) || 3, 1), 10);
 
   const room = {
     roomCode,
@@ -103,11 +158,14 @@ function createRoom(io, socket, { playerName }) {
     lastRoundCallerId: null,
     lastRoundStarterIndex: null,
     playersWhoActedInLastRound: [],
+    totalRounds: rounds,
+    currentRound: 1,
+    cumulativeScores: {},
   };
 
   rooms.set(roomCode, room);
   socket.join(roomCode);
-  socket.emit('roomCreated', { roomCode, playerId, playerName: playerName.trim() });
+  socket.emit('roomCreated', { roomCode, playerId, playerName: playerName.trim(), totalRounds: rounds });
 }
 
 function joinRoom(io, socket, { roomCode, playerName }) {
@@ -130,7 +188,7 @@ function joinRoom(io, socket, { roomCode, playerName }) {
   });
 
   socket.join(code);
-  socket.emit('roomJoined', { roomCode: code, playerId, playerName: playerName.trim() });
+  socket.emit('roomJoined', { roomCode: code, playerId, playerName: playerName.trim(), totalRounds: room.totalRounds });
 
   // Broadcast updated player list to everyone in room
   io.to(code).emit('playerJoined', {
@@ -184,6 +242,45 @@ function startGame(io, socket, { roomCode }) {
   room.currentPlayerIndex = 0;
 
   // Send each player their own game state (they'll see their outer cards)
+  emitToAll(io, room, 'gameStarted', (pid) => buildClientState(room, pid));
+}
+
+function startNextRound(io, socket, { roomCode }) {
+  const room = getRoom(roomCode);
+  if (!room) return socket.emit('errorOccurred', { message: 'חדר לא נמצא' });
+  if (socket.id !== room.hostSocketId) return socket.emit('errorOccurred', { message: 'רק המארח יכול להתחיל סיבוב' });
+  if (room.phase !== PHASES.ROUND_END) return;
+
+  room.currentRound++;
+
+  // Reset per-round player state
+  room.players.forEach(p => {
+    p.hand = [];
+    p.peekedInitial = false;
+    p.hasCalledRata = false;
+  });
+  room.playersWhoActedInLastRound = [];
+  room.lastRoundCallerId = null;
+  room.lastRoundStarterIndex = null;
+  room.drawnCard = null;
+  room.draw2Remaining = 0;
+
+  // New deck & deal
+  const deck = createDeck();
+  const hands = dealCards(deck, room.players.length);
+  markInitialPeek(hands, room.players);
+  room.players.forEach((p, i) => { p.hand = hands[i]; });
+  room.deck = deck;
+
+  room.discardPile = [room.deck.shift()];
+  while (room.discardPile[room.discardPile.length - 1].type !== CARD_TYPES.NUMBER && room.deck.length > 0) {
+    room.discardPile.push(room.deck.shift());
+  }
+
+  room.phase = PHASES.INITIAL_PEEK;
+  room.turnPhase = TURN_PHASES.IDLE;
+  room.currentPlayerIndex = 0;
+
   emitToAll(io, room, 'gameStarted', (pid) => buildClientState(room, pid));
 }
 
@@ -508,6 +605,7 @@ module.exports = {
   joinRoom,
   rejoinRoom,
   startGame,
+  startNextRound,
   peekDone,
   handleDrawFromDeck,
   handleDrawFromDiscard,

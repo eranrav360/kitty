@@ -4,7 +4,7 @@ import { HE } from '../i18n/he';
 
 export default function WaitingScreen() {
   const { state } = useGame();
-  const { roomCode, isHost, waitingPlayers } = state;
+  const { roomCode, isHost, waitingPlayers, totalRounds } = state;
 
   function handleStart() {
     socket.emit('startGame', { roomCode });
@@ -17,6 +17,7 @@ export default function WaitingScreen() {
       <h2 className="section-title">{HE.ROOM_CODE_DISPLAY}</h2>
       <div className="room-code-display">{roomCode}</div>
       <p className="share-hint">{HE.SHARE_CODE_HINT}</p>
+      <p className="share-hint">{HE.ROUNDS_LABEL}: <strong>{totalRounds}</strong></p>
 
       <div className="players-section">
         <h3 className="players-title">

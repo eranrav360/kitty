@@ -65,6 +65,15 @@ export const HE = {
   RATA_YES: 'כן, חתחתול!',
   RATA_NO: 'ביטול',
 
+  ROUNDS_LABEL: 'מספר סיבובים',
+  ROUND_OF: (cur, total) => `סיבוב ${cur} מתוך ${total}`,
+  ROUND_SCORES: 'תוצאות הסיבוב',
+  CUMULATIVE_SCORES: 'ניקוד מצטבר',
+  NEXT_ROUND: 'סיבוב הבא ←',
+  WAITING_NEXT_ROUND: 'ממתין למארח להתחיל את הסיבוב הבא...',
+  ROUND_COL: 'סיבוב',
+  TOTAL_COL: 'סה"כ',
+
   GAME_OVER: 'המשחק נגמר!',
   FINAL_SCORES: 'ניקוד סופי',
   WINNER: (name) => `🏆 ${name} ניצח/ה!`,

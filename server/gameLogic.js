@@ -166,6 +166,8 @@ function buildClientState(room, forPlayerId) {
     drawnCard,
     lastRoundCallerId: room.lastRoundCallerId,
     draw2Remaining: currentPlayer?.playerId === forPlayerId ? room.draw2Remaining : undefined,
+    currentRound: room.currentRound,
+    totalRounds: room.totalRounds,
   };
 }
 

@@ -2,10 +2,12 @@ export const ACTION_TYPES = {
   SET_CONNECTED: 'SET_CONNECTED',
   SET_MY_IDENTITY: 'SET_MY_IDENTITY',
   SET_ROOM_CODE: 'SET_ROOM_CODE',
+  SET_TOTAL_ROUNDS: 'SET_TOTAL_ROUNDS',
   GAME_STATE_UPDATED: 'GAME_STATE_UPDATED',
   CARD_DRAWN: 'CARD_DRAWN',
   PEEK_RESULT: 'PEEK_RESULT',
   RATA_CALLED: 'RATA_CALLED',
+  ROUND_ENDED: 'ROUND_ENDED',
   GAME_ENDED: 'GAME_ENDED',
   SET_PENDING_ACTION: 'SET_PENDING_ACTION',
   CLEAR_PENDING_ACTION: 'CLEAR_PENDING_ACTION',
@@ -34,6 +36,11 @@ export const initialState = {
   drawnCard: null,
   lastRoundCallerId: null,
   draw2Remaining: 0,
+
+  // Multi-round tracking
+  currentRound: 1,
+  totalRounds: 3,
+  roundState: null,   // data from roundEnded event
 
   // Final game state
   finalState: null,
@@ -66,6 +73,9 @@ export function gameReducer(state, action) {
     case ACTION_TYPES.SET_ROOM_CODE:
       return { ...state, roomCode: action.payload };
 
+    case ACTION_TYPES.SET_TOTAL_ROUNDS:
+      return { ...state, totalRounds: action.payload };
+
     case ACTION_TYPES.SET_WAITING_PLAYERS:
       return { ...state, waitingPlayers: action.payload };
 
@@ -81,6 +91,9 @@ export function gameReducer(state, action) {
         lastRoundCallerId: action.payload.lastRoundCallerId,
         draw2Remaining: action.payload.draw2Remaining ?? 0,
         roomCode: action.payload.roomCode ?? state.roomCode,
+        currentRound: action.payload.currentRound ?? state.currentRound,
+        totalRounds: action.payload.totalRounds ?? state.totalRounds,
+        roundState: null,
       };
 
     case ACTION_TYPES.CARD_DRAWN:
@@ -91,6 +104,15 @@ export function gameReducer(state, action) {
 
     case ACTION_TYPES.RATA_CALLED:
       return { ...state, showRataConfirm: false };
+
+    case ACTION_TYPES.ROUND_ENDED:
+      return {
+        ...state,
+        phase: 'ROUND_END',
+        roundState: action.payload,
+        currentRound: action.payload.currentRound,
+        totalRounds: action.payload.totalRounds,
+      };
 
     case ACTION_TYPES.GAME_ENDED:
       return { ...state, finalState: action.payload, phase: 'ENDED' };

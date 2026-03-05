@@ -7,6 +7,7 @@ import LobbyScreen from './screens/LobbyScreen';
 import WaitingScreen from './screens/WaitingScreen';
 import PeekScreen from './screens/PeekScreen';
 import GameScreen from './screens/GameScreen';
+import RoundEndScreen from './screens/RoundEndScreen';
 import ScoreScreen from './screens/ScoreScreen';
 
 export default function App() {
@@ -33,6 +34,7 @@ export default function App() {
   const { phase, roomCode } = state;
 
   if (phase === 'ENDED') return <ScoreScreen />;
+  if (phase === 'ROUND_END') return <RoundEndScreen />;
   if (phase === 'PLAYING' || phase === 'LAST_ROUND') return <GameScreen />;
   if (phase === 'INITIAL_PEEK') return <PeekScreen />;
   if (roomCode) return <WaitingScreen />;
