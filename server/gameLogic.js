@@ -208,6 +208,7 @@ module.exports = {
   drawFromDeck,
   reshuffleDiscard,
   replacePowerCardsInHands,
+  computeScores,
   buildClientState,
   buildFinalState,
 };
