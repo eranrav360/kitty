@@ -11,11 +11,11 @@ function getCardColor(card) {
   return 'card-number';
 }
 
-// 0-4: dogs, 5-9: hamsters (matching physical game)
+// 0-6: dogs, 7-9: hamsters
 function getCardAnimal(card) {
   if (!card || card.value === null) return null;
-  if (card.value >= 0 && card.value <= 4) return '🐶';
-  if (card.value >= 5 && card.value <= 9) return '🐹';
+  if (card.value >= 0 && card.value <= 6) return '🐶';
+  if (card.value >= 7 && card.value <= 9) return '🐹';
   return null;
 }
 
@@ -71,20 +71,12 @@ export default function Card({
         </div>
       ) : (
         <>
-          <div className="card-corner card-corner-top">
-            <span className="card-corner-diamond">
-              <span className="card-corner-label">{top}</span>
-            </span>
-          </div>
+          <div className="card-corner card-corner-top">{top}</div>
           <div className="card-center">
             {animal && <div className="card-animal">{animal}</div>}
             <div>{center}</div>
           </div>
-          <div className="card-corner card-corner-bottom">
-            <span className="card-corner-diamond">
-              <span className="card-corner-label">{top}</span>
-            </span>
-          </div>
+          <div className="card-corner card-corner-bottom">{top}</div>
         </>
       )}
     </div>

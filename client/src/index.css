@@ -680,40 +680,16 @@ body {
 .card-unknown { background: rgba(255,255,255,0.1); }
 .card-empty { background: rgba(255,255,255,0.05); border: 2px dashed rgba(255,255,255,0.15); }
 
-/* ── Diamond corners ─────────────────────────────────────────── */
+/* ── Card corners ────────────────────────────────────────────── */
 .card-corner {
+  font-size: 14px;
+  font-weight: 800;
   line-height: 1;
   align-self: stretch;
-  display: flex;
-  align-items: flex-start;
 }
-.card-corner-top  { justify-content: flex-start; } /* RTL: flex-start = right side */
-.card-corner-bottom { justify-content: flex-end; transform: rotate(180deg); }
-
-/* The rotated diamond shape */
-.card-corner-diamond {
-  width: 22px; height: 22px;
-  background: #dc2626;           /* red for number cards */
-  transform: rotate(45deg);
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-  border-radius: 2px;
-}
-.card-corner-label {
-  transform: rotate(-45deg);
-  font-size: 11px; font-weight: 900;
-  color: white;
-  display: block; line-height: 1;
-  white-space: nowrap;
-}
-
-/* Power card diamond colours */
-.card-peek  .card-corner-diamond { background: #15803d; }
-.card-swap  .card-corner-diamond { background: #5b21b6; }
-.card-draw2 .card-corner-diamond { background: #b45309; }
-
-.card-small .card-corner-diamond { width: 15px; height: 15px; }
-.card-small .card-corner-label   { font-size: 7px; }
+.card-small .card-corner { font-size: 10px; }
+.card-corner-top { text-align: right; }
+.card-corner-bottom { text-align: left; transform: rotate(180deg); }
 
 .card-center {
   font-size: 28px;
