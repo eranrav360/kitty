@@ -14,11 +14,11 @@ function getCardColor(card) {
   return 'card-very-high';
 }
 
-// Cats on 1-6, mice on 7-9, nothing on 0
+// Dogs on 1-6, hamsters on 7-9, nothing on 0
 function getCardAnimal(card) {
   if (!card || card.value === null) return null;
-  if (card.value >= 1 && card.value <= 6) return '🐱';
-  if (card.value >= 7 && card.value <= 9) return '🐭';
+  if (card.value >= 1 && card.value <= 6) return '🐶';
+  if (card.value >= 7 && card.value <= 9) return '🐹';
   return null;
 }
 
@@ -71,7 +71,7 @@ export default function Card({
     >
       {hidden ? (
         <div className="card-back-content">
-          <span className="card-back-icon">🐱</span>
+          <span className="card-back-icon">🐶</span>
         </div>
       ) : (
         <>
