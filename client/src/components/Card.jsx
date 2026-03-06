@@ -41,14 +41,17 @@ export default function Card({
   small,
   forceReveal,
   faceDown,
+  localReveal,
 }) {
   if (!card) return <div className={`card card-empty ${small ? 'card-small' : ''}`} />;
 
-  const reveal = forceReveal || card.isKnownToMe || card.isRevealed;
+  const reveal = forceReveal || localReveal || card.isRevealed;
   const hidden = faceDown || !reveal;
-  const { top, center, isHidden } = getCardLabel(card, forceReveal);
+  const { top, center, isHidden } = getCardLabel(card, forceReveal || localReveal);
   const colorClass = hidden ? 'card-back' : getCardColor(card);
   const animal = !hidden ? getCardAnimal(card) : null;
+  // Subtle indicator: player knows this card but it's showing face-down
+  const isKnownButHidden = card.isKnownToMe && hidden && !faceDown;
 
   return (
     <div
@@ -60,6 +63,7 @@ export default function Card({
         highlighted ? 'card-highlighted' : '',
         onClick ? 'card-clickable' : '',
         hidden ? 'card-hidden' : '',
+        isKnownButHidden ? 'card-known' : '',
       ].join(' ')}
       onClick={onClick}
       role={onClick ? 'button' : undefined}

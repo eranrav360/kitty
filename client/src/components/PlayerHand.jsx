@@ -1,3 +1,4 @@
+import { useState, useEffect, useRef } from 'react';
 import { useGame } from '../context/GameContext';
 import { ACTION_TYPES } from '../context/gameReducer';
 import Card from './Card';
@@ -6,6 +7,17 @@ import socket from '../socket';
 export default function PlayerHand() {
   const { state, dispatch } = useGame();
   const { players, myPlayerId, turnPhase, drawnCard, pendingAction, swapSelection, roomCode } = state;
+
+  // Local tap-to-reveal state
+  const [localPeekIdx, setLocalPeekIdx] = useState(null);
+  const localPeekTimerRef = useRef(null);
+
+  // Cleanup timer on unmount
+  useEffect(() => {
+    return () => {
+      if (localPeekTimerRef.current) clearTimeout(localPeekTimerRef.current);
+    };
+  }, []);
 
   const me = players.find(p => p.playerId === myPlayerId);
   if (!me) return null;
@@ -32,6 +44,14 @@ export default function PlayerHand() {
 
     if (canSwap) {
       socket.emit('swapWithHand', { roomCode, handIndex: index });
+      return;
+    }
+
+    // Local tap-to-reveal: briefly show a known card for 2 seconds
+    if (me.hand[index]?.isKnownToMe) {
+      if (localPeekTimerRef.current) clearTimeout(localPeekTimerRef.current);
+      setLocalPeekIdx(index);
+      localPeekTimerRef.current = setTimeout(() => setLocalPeekIdx(null), 2000);
     }
   }
 
@@ -44,13 +64,14 @@ export default function PlayerHand() {
           key={card.id || i}
           card={card}
           index={i}
-          onClick={isInteractive ? () => handleCardClick(i) : undefined}
+          onClick={(isInteractive || card.isKnownToMe) ? () => handleCardClick(i) : undefined}
           highlighted={
             canSwap ||
             isPeekMode ||
             (isSwapMode && swapSelection === null)
           }
           selected={swapSelection?.myHandIndex === i}
+          localReveal={localPeekIdx === i}
         />
       ))}
     </div>

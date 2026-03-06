@@ -63,6 +63,7 @@ function advanceTurn(io, room) {
   room.currentPlayerIndex = next;
   room.turnPhase = TURN_PHASES.IDLE;
   room.drawnCard = null;
+  room.drawnFromDiscard = false;
   room.draw2Remaining = 0;
   broadcastState(io, room);
 }
@@ -353,6 +354,7 @@ function handleDrawFromDiscard(io, socket, { roomCode }) {
   room.drawnCard = room.discardPile.pop();
   room.drawnCard.knownBy.clear();
   room.turnPhase = TURN_PHASES.DREW_FROM_DISCARD;
+  room.drawnFromDiscard = true;
 
   // Player can see this card (it was face-up on discard)
   socket.emit('cardDrawn', {

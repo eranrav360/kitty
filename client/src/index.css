@@ -617,6 +617,16 @@ body {
 .peek-reveal-label { font-size: 14px; color: rgba(255,255,255,0.6); margin-bottom: 12px; }
 .peek-reveal-value { font-size: 64px; font-weight: 800; color: var(--gold); }
 .peek-reveal-hint { font-size: 13px; color: rgba(255,255,255,0.4); margin-top: 16px; }
+.peek-reveal-countdown {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  background: rgba(251,191,36,0.15);
+  border: 2px solid var(--gold);
+  color: var(--gold);
+  font-size: 20px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  margin: 16px auto 0;
+}
 
 /* ── Cards ───────────────────────────────────────────────────── */
 .card {
@@ -688,6 +698,32 @@ body {
 .card-back-content { display: flex; align-items: center; justify-content: center; height: 100%; }
 .card-back-icon { font-size: 28px; opacity: 0.6; }
 .card-small .card-back-icon { font-size: 18px; }
+
+/* Known-but-hidden card: subtle gold border + small dot indicator */
+.card-known { border-color: rgba(251,191,36,0.55); }
+.card-known::after {
+  content: '';
+  position: absolute;
+  bottom: 5px;
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--gold);
+  opacity: 0.75;
+}
+
+/* Discard-taken banner (observers see what was taken from discard) */
+.discard-taken-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(251,191,36,0.12);
+  border: 1px solid rgba(251,191,36,0.3);
+  border-radius: 10px;
+  padding: 6px 12px;
+  font-size: 14px;
+}
+.discard-taken-name { font-weight: 700; color: var(--gold); }
+.discard-taken-label { color: rgba(255,255,255,0.7); }
 
 /* ── Score screen ────────────────────────────────────────────── */
 .score-screen {

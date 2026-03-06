@@ -137,9 +137,14 @@ function buildClientState(room, forPlayerId) {
     };
   });
 
-  // Only the current drawing player sees their drawnCard
+  // The current drawing player always sees their drawnCard;
+  // when drawn from the discard pile, all players see it (like a physical board game)
   const currentPlayer = room.players[room.currentPlayerIndex];
-  const drawnCard = (currentPlayer?.playerId === forPlayerId && room.drawnCard)
+  const showDrawnCard = room.drawnCard && (
+    currentPlayer?.playerId === forPlayerId ||
+    room.drawnFromDiscard
+  );
+  const drawnCard = showDrawnCard
     ? {
         id: room.drawnCard.id,
         type: room.drawnCard.type,
@@ -168,6 +173,7 @@ function buildClientState(room, forPlayerId) {
     draw2Remaining: currentPlayer?.playerId === forPlayerId ? room.draw2Remaining : undefined,
     currentRound: room.currentRound,
     totalRounds: room.totalRounds,
+    drawnFromDiscard: !!room.drawnFromDiscard,
   };
 }
 

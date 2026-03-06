@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { useGame } from '../context/GameContext';
 import { ACTION_TYPES } from '../context/gameReducer';
 import { HE } from '../i18n/he';
@@ -19,9 +20,27 @@ export default function GameScreen() {
   const isMyTurn = me?.isCurrentTurn;
   const isPowerModal = state.turnPhase === 'USING_POWER';
 
+  const [peekCountdown, setPeekCountdown] = useState(4);
+
   function clearPeek() {
     dispatch({ type: ACTION_TYPES.CLEAR_PEEK_REVEAL });
   }
+
+  // Auto-dismiss peek overlay after 4 seconds with countdown
+  useEffect(() => {
+    if (!peekReveal) return;
+    setPeekCountdown(4);
+    let count = 4;
+    const timer = setInterval(() => {
+      count--;
+      setPeekCountdown(count);
+      if (count <= 0) {
+        clearInterval(timer);
+        dispatch({ type: ACTION_TYPES.CLEAR_PEEK_REVEAL });
+      }
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [peekReveal]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="game-screen">
@@ -41,7 +60,7 @@ export default function GameScreen() {
             <div className="peek-reveal-value">
               {peekReveal.card.value !== null ? peekReveal.card.value : peekReveal.card.type}
             </div>
-            <div className="peek-reveal-hint">לחץ לסגירה</div>
+            <div className="peek-reveal-countdown">{peekCountdown}</div>
           </div>
         </div>
       )}

@@ -34,6 +34,7 @@ export const initialState = {
   deckSize: 0,
   discardTop: null,
   drawnCard: null,
+  drawnFromDiscard: false,
   lastRoundCallerId: null,
   draw2Remaining: 0,
 
@@ -88,6 +89,7 @@ export function gameReducer(state, action) {
         deckSize: action.payload.deckSize,
         discardTop: action.payload.discardTop,
         drawnCard: action.payload.drawnCard ?? state.drawnCard,
+        drawnFromDiscard: action.payload.drawnFromDiscard ?? false,
         lastRoundCallerId: action.payload.lastRoundCallerId,
         draw2Remaining: action.payload.draw2Remaining ?? 0,
         roomCode: action.payload.roomCode ?? state.roomCode,

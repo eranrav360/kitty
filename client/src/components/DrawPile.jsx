@@ -5,10 +5,14 @@ import Card from './Card';
 
 export default function DrawPile() {
   const { state } = useGame();
-  const { deckSize, discardTop, turnPhase, players, myPlayerId, roomCode, draw2Remaining } = state;
+  const { deckSize, discardTop, turnPhase, players, myPlayerId, roomCode, draw2Remaining,
+          drawnCard, drawnFromDiscard } = state;
 
   const me = players.find(p => p.playerId === myPlayerId);
   const isMyTurn = me?.isCurrentTurn;
+  const currentPlayer = players.find(p => p.isCurrentTurn);
+  // Show taken-from-discard card to all observers (current player already sees it in ActionPanel)
+  const showTakenFromDiscard = drawnFromDiscard && drawnCard && !isMyTurn;
 
   const canDrawFromDeck = isMyTurn && (turnPhase === 'IDLE' || turnPhase === 'DRAW2_PENDING');
   const canDrawFromDiscard = isMyTurn && turnPhase === 'IDLE' &&
@@ -64,6 +68,13 @@ export default function DrawPile() {
           <div className="pile-label">{HE.DISCARD_LABEL}</div>
         </div>
       </div>
+      {showTakenFromDiscard && (
+        <div className="discard-taken-banner">
+          <span className="discard-taken-name">{currentPlayer?.name}</span>
+          <span className="discard-taken-label"> לקח מהפסולת:</span>
+          <Card card={drawnCard} forceReveal small />
+        </div>
+      )}
     </div>
   );
 }
