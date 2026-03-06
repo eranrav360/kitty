@@ -668,25 +668,53 @@ body {
 
 /* Card colors */
 .card-back { background: linear-gradient(135deg, var(--purple-mid), var(--purple)); border-color: rgba(255,255,255,0.2); }
-.card-low { background: linear-gradient(135deg, var(--teal-dark), var(--teal)); color: var(--white); }
-.card-mid { background: linear-gradient(135deg, var(--teal), var(--teal-light)); color: var(--white); }
-.card-high { background: linear-gradient(135deg, var(--purple-mid), var(--purple)); color: var(--white); }
-.card-very-high { background: linear-gradient(135deg, var(--purple), var(--purple-light)); color: var(--white); }
-.card-peek { background: linear-gradient(135deg, #581c87, #7c3aed); color: var(--white); }
-.card-swap { background: linear-gradient(135deg, var(--teal-dark), var(--teal)); color: var(--white); }
-.card-draw2 { background: linear-gradient(135deg, var(--purple-dark), var(--purple-mid)); color: var(--white); }
+
+/* Number cards – cream/white, matching physical game */
+.card-number { background: #fdf6e8; color: #1e1008; border-color: #c8a86a; }
+
+/* Power cards – colours matching physical game */
+.card-peek  { background: linear-gradient(135deg, #14532d, #16a34a); color: var(--white); border-color: rgba(255,255,255,0.25); }
+.card-swap  { background: linear-gradient(135deg, #4c1d95, #7c3aed); color: var(--white); border-color: rgba(255,255,255,0.25); }
+.card-draw2 { background: linear-gradient(135deg, #78350f, #d97706); color: var(--white); border-color: rgba(255,255,255,0.25); }
+
 .card-unknown { background: rgba(255,255,255,0.1); }
 .card-empty { background: rgba(255,255,255,0.05); border: 2px dashed rgba(255,255,255,0.15); }
 
+/* ── Diamond corners ─────────────────────────────────────────── */
 .card-corner {
-  font-size: 14px;
-  font-weight: 800;
   line-height: 1;
   align-self: stretch;
+  display: flex;
+  align-items: flex-start;
 }
-.card-small .card-corner { font-size: 10px; }
-.card-corner-top { text-align: right; }
-.card-corner-bottom { text-align: left; transform: rotate(180deg); }
+.card-corner-top  { justify-content: flex-start; } /* RTL: flex-start = right side */
+.card-corner-bottom { justify-content: flex-end; transform: rotate(180deg); }
+
+/* The rotated diamond shape */
+.card-corner-diamond {
+  width: 22px; height: 22px;
+  background: #dc2626;           /* red for number cards */
+  transform: rotate(45deg);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  border-radius: 2px;
+}
+.card-corner-label {
+  transform: rotate(-45deg);
+  font-size: 11px; font-weight: 900;
+  color: white;
+  display: block; line-height: 1;
+  white-space: nowrap;
+}
+
+/* Power card diamond colours */
+.card-peek  .card-corner-diamond { background: #15803d; }
+.card-swap  .card-corner-diamond { background: #5b21b6; }
+.card-draw2 .card-corner-diamond { background: #b45309; }
+
+.card-small .card-corner-diamond { width: 15px; height: 15px; }
+.card-small .card-corner-label   { font-size: 7px; }
+
 .card-center {
   font-size: 28px;
   font-weight: 800;

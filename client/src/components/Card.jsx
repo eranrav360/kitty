@@ -1,24 +1,21 @@
 import { HE } from '../i18n/he';
 
-// Color mapping based on purple/teal palette
+// All number cards get the clean cream look; power cards get their own colour
 function getCardColor(card) {
   if (!card || card.value === null) {
-    if (card?.type === 'PEEK') return 'card-peek';
-    if (card?.type === 'SWAP') return 'card-swap';
+    if (card?.type === 'PEEK')  return 'card-peek';
+    if (card?.type === 'SWAP')  return 'card-swap';
     if (card?.type === 'DRAW2') return 'card-draw2';
     return 'card-unknown';
   }
-  if (card.value <= 2) return 'card-low';
-  if (card.value <= 5) return 'card-mid';
-  if (card.value <= 7) return 'card-high';
-  return 'card-very-high';
+  return 'card-number';
 }
 
-// Dogs on 1-6, hamsters on 7-9, nothing on 0
+// 0-4: dogs, 5-9: hamsters (matching physical game)
 function getCardAnimal(card) {
   if (!card || card.value === null) return null;
-  if (card.value >= 1 && card.value <= 6) return '🐶';
-  if (card.value >= 7 && card.value <= 9) return '🐹';
+  if (card.value >= 0 && card.value <= 4) return '🐶';
+  if (card.value >= 5 && card.value <= 9) return '🐹';
   return null;
 }
 
@@ -26,9 +23,9 @@ function getCardLabel(card, forceReveal) {
   if (!forceReveal && !card.isKnownToMe && !card.isRevealed) {
     return { top: '?', center: '?', isHidden: true };
   }
-  if (card.type === 'PEEK') return { top: '👁', center: HE.CARD_PEEK, isHidden: false };
-  if (card.type === 'SWAP') return { top: '🔄', center: HE.CARD_SWAP, isHidden: false };
-  if (card.type === 'DRAW2') return { top: '✌', center: HE.CARD_DRAW2, isHidden: false };
+  if (card.type === 'PEEK')  return { top: '👁',  center: HE.CARD_PEEK,  isHidden: false };
+  if (card.type === 'SWAP')  return { top: '🔄',  center: HE.CARD_SWAP,  isHidden: false };
+  if (card.type === 'DRAW2') return { top: '✌',   center: HE.CARD_DRAW2, isHidden: false };
   return { top: card.value, center: card.value, isHidden: false };
 }
 
@@ -50,7 +47,6 @@ export default function Card({
   const { top, center, isHidden } = getCardLabel(card, forceReveal || localReveal);
   const colorClass = hidden ? 'card-back' : getCardColor(card);
   const animal = !hidden ? getCardAnimal(card) : null;
-  // Subtle indicator: player knows this card but it's showing face-down
   const isKnownButHidden = card.isKnownToMe && hidden && !faceDown;
 
   return (
@@ -75,12 +71,20 @@ export default function Card({
         </div>
       ) : (
         <>
-          <div className="card-corner card-corner-top">{top}</div>
+          <div className="card-corner card-corner-top">
+            <span className="card-corner-diamond">
+              <span className="card-corner-label">{top}</span>
+            </span>
+          </div>
           <div className="card-center">
             {animal && <div className="card-animal">{animal}</div>}
             <div>{center}</div>
           </div>
-          <div className="card-corner card-corner-bottom">{top}</div>
+          <div className="card-corner card-corner-bottom">
+            <span className="card-corner-diamond">
+              <span className="card-corner-label">{top}</span>
+            </span>
+          </div>
         </>
       )}
     </div>
