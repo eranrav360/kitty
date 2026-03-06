@@ -208,10 +208,11 @@ function rejoinRoom(io, socket, { roomCode, playerId }) {
   const player = room.players.find(p => p.playerId === playerId);
   if (!player) return socket.emit('errorOccurred', { message: 'שחקן לא נמצא' });
 
+  const wasHost = room.hostSocketId === player.socketId; // check BEFORE overwriting
   player.socketId = socket.id;
   socket.join(room.roomCode);
 
-  if (room.hostSocketId === player.socketId) {
+  if (wasHost) {
     room.hostSocketId = socket.id;
   }
 
