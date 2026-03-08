@@ -19,6 +19,7 @@ export const ACTION_TYPES = {
   SET_SWAP_SELECTION: 'SET_SWAP_SELECTION',
   CLEAR_SWAP_SELECTION: 'CLEAR_SWAP_SELECTION',
   SET_WAITING_PLAYERS: 'SET_WAITING_PLAYERS',
+  RESET_TO_LOBBY: 'RESET_TO_LOBBY',
 };
 
 export const initialState = {
@@ -145,6 +146,10 @@ export function gameReducer(state, action) {
 
     case ACTION_TYPES.CLEAR_SWAP_SELECTION:
       return { ...state, swapSelection: null };
+
+    // Room no longer exists (server restart / disconnect timeout) — go back to lobby
+    case ACTION_TYPES.RESET_TO_LOBBY:
+      return { ...initialState, isConnected: state.isConnected };
 
     default:
       return state;

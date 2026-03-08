@@ -46,6 +46,10 @@ export function useSocket(dispatch) {
     socket.on('errorOccurred', ({ message }) => {
       dispatch({ type: ACTION_TYPES.SET_ERROR, payload: message });
       setTimeout(() => dispatch({ type: ACTION_TYPES.CLEAR_ERROR }), 3000);
+      // Room or player no longer exists → wipe stale state and return to lobby
+      if (message === 'חדר לא נמצא' || message === 'שחקן לא נמצא') {
+        dispatch({ type: ACTION_TYPES.RESET_TO_LOBBY });
+      }
     });
 
     return () => {

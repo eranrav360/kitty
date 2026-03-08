@@ -208,6 +208,12 @@ function rejoinRoom(io, socket, { roomCode, playerId }) {
   const player = room.players.find(p => p.playerId === playerId);
   if (!player) return socket.emit('errorOccurred', { message: 'שחקן לא נמצא' });
 
+  // Cancel pending lobby-removal timer if they reconnected in time
+  if (player.disconnectTimer) {
+    clearTimeout(player.disconnectTimer);
+    player.disconnectTimer = null;
+  }
+
   const wasHost = room.hostSocketId === player.socketId; // check BEFORE overwriting
   player.socketId = socket.id;
   socket.join(room.roomCode);
@@ -571,34 +577,49 @@ function finishTurn(io, room, currentPlayer) {
   advanceTurn(io, room);
 }
 
+function removeLobbyPlayer(io, room, player) {
+  const code = room.roomCode;
+  const idx = room.players.findIndex(p => p.playerId === player.playerId);
+  if (idx === -1) return; // already reconnected or removed
+
+  room.players.splice(idx, 1);
+
+  if (room.players.length === 0) {
+    rooms.delete(code);
+    return;
+  }
+
+  // Reassign host if needed
+  if (room.hostSocketId === player.socketId) {
+    room.hostSocketId = room.players[0].socketId;
+  }
+
+  io.to(code).emit('playerJoined', {
+    players: room.players.map(p => ({
+      playerId: p.playerId,
+      name: p.name,
+      isHost: p.socketId === room.hostSocketId,
+    })),
+  });
+}
+
 function handleDisconnect(io, socket) {
   // Find the room this socket was in
   for (const [code, room] of rooms) {
     const playerIndex = room.players.findIndex(p => p.socketId === socket.id);
     if (playerIndex === -1) continue;
 
+    const player = room.players[playerIndex];
+
     if (room.phase === PHASES.LOBBY) {
-      room.players.splice(playerIndex, 1);
-
-      if (room.players.length === 0) {
-        rooms.delete(code);
-        return;
-      }
-
-      // If host left, assign new host
-      if (socket.id === room.hostSocketId) {
-        room.hostSocketId = room.players[0].socketId;
-      }
-
-      io.to(code).emit('playerJoined', {
-        players: room.players.map(p => ({
-          playerId: p.playerId,
-          name: p.name,
-          isHost: p.socketId === room.hostSocketId,
-        })),
-      });
+      // Give a 30-second grace period so brief disconnects (mobile, refresh)
+      // don't immediately destroy the room slot.
+      player.disconnectTimer = setTimeout(
+        () => removeLobbyPlayer(io, room, player),
+        30_000,
+      );
     }
-    // During a game, keep the player's slot so they can rejoin
+    // During a game (or grace period), keep the player's slot so they can rejoin
     break;
   }
 }
