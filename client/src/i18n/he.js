@@ -82,6 +82,12 @@ export const HE = {
   SCORE_LABEL: 'נקודות',
   POINTS: (n) => `${n} נק׳`,
 
+  SWAP_ANNOUNCEMENT: (swapper, myPos, targetPlayer, targetPos) =>
+    `${swapper} החליף את קלפו ה${myPos} עם קלפו ה${targetPos} של ${targetPlayer}`,
+
+  ROUND_WINNER_LABEL: 'ניצח את הסיבוב:',
+  OVERALL_LEADER_LABEL: 'מוביל כרגע:',
+
   NOT_YOUR_TURN: 'זה לא התור שלך',
   DISCONNECTED: 'מנותק מהשרת...',
   RECONNECTING: 'מתחבר מחדש...',

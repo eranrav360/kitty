@@ -20,6 +20,8 @@ export const ACTION_TYPES = {
   CLEAR_SWAP_SELECTION: 'CLEAR_SWAP_SELECTION',
   SET_WAITING_PLAYERS: 'SET_WAITING_PLAYERS',
   RESET_TO_LOBBY: 'RESET_TO_LOBBY',
+  SET_SWAP_ANNOUNCEMENT: 'SET_SWAP_ANNOUNCEMENT',
+  CLEAR_SWAP_ANNOUNCEMENT: 'CLEAR_SWAP_ANNOUNCEMENT',
 };
 
 export const initialState = {
@@ -53,6 +55,7 @@ export const initialState = {
   swapSelection: null,   // { myHandIndex } — first step of swap
   showRataConfirm: false,
   errorMessage: null,
+  swapAnnouncement: null,  // { swapperName, swapperPlayerId, myPositionLabel, targetPlayerName, targetPositionLabel }
   isConnected: false,
 
   // Lobby waiting room players list
@@ -150,6 +153,12 @@ export function gameReducer(state, action) {
     // Room no longer exists (server restart / disconnect timeout) — go back to lobby
     case ACTION_TYPES.RESET_TO_LOBBY:
       return { ...initialState, isConnected: state.isConnected };
+
+    case ACTION_TYPES.SET_SWAP_ANNOUNCEMENT:
+      return { ...state, swapAnnouncement: action.payload };
+
+    case ACTION_TYPES.CLEAR_SWAP_ANNOUNCEMENT:
+      return { ...state, swapAnnouncement: null };
 
     default:
       return state;

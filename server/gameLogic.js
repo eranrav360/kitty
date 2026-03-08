@@ -88,17 +88,23 @@ function computeScores(room) {
   });
 }
 
-// Replace power cards remaining in a player's hand with drawn cards before scoring
+// Replace power cards remaining in a player's hand with number cards before scoring.
+// Keeps drawing until a NUMBER card is found (power cards drawn along the way go to discard).
 function replacePowerCardsInHands(room) {
   room.players.forEach(player => {
     player.hand = player.hand.map(card => {
       if (card.type !== CARD_TYPES.NUMBER) {
-        const replacement = drawFromDeck(room);
+        let replacement = drawFromDeck(room);
+        // Discard any power cards drawn along the way and keep trying
+        while (replacement && replacement.type !== CARD_TYPES.NUMBER) {
+          room.discardPile.push(replacement);
+          replacement = drawFromDeck(room);
+        }
         if (replacement) {
           replacement.knownBy.clear();
           return replacement;
         }
-        // If deck is truly empty (extremely rare), keep the power card with value 0
+        // Deck is truly empty — treat as 0
         return { ...card, value: 0, type: CARD_TYPES.NUMBER };
       }
       return card;

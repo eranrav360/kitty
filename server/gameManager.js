@@ -499,6 +499,19 @@ function handleUseSwap(io, socket, { roomCode, myHandIndex, targetPlayerId, targ
   room.discardPile.push(room.drawnCard);
   room.drawnCard = null;
 
+  // Announce the swap to all players so opponents know what moved
+  const posLabels = ['ימני ביותר', 'ימני אמצעי', 'שמאלי אמצעי', 'שמאלי ביותר'];
+  io.to(room.roomCode).emit('swapAnnouncement', {
+    swapperName: currentPlayer.name,
+    swapperPlayerId: currentPlayer.playerId,
+    myHandIndex,
+    myPositionLabel: posLabels[myHandIndex] ?? `#${myHandIndex + 1}`,
+    targetPlayerName: targetPlayer.name,
+    targetPlayerId: targetPlayer.playerId,
+    targetHandIndex,
+    targetPositionLabel: posLabels[targetHandIndex] ?? `#${targetHandIndex + 1}`,
+  });
+
   finishTurn(io, room, currentPlayer);
 }
 

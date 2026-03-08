@@ -13,7 +13,7 @@ import RataButton from '../components/RataButton';
 
 export default function GameScreen() {
   const { state, dispatch } = useGame();
-  const { players, myPlayerId, pendingAction, peekReveal, showRataConfirm, errorMessage } = state;
+  const { players, myPlayerId, pendingAction, peekReveal, showRataConfirm, errorMessage, swapAnnouncement } = state;
 
   const me = players.find(p => p.playerId === myPlayerId);
   const opponents = players.filter(p => p.playerId !== myPlayerId);
@@ -50,6 +50,18 @@ export default function GameScreen() {
       {/* Error toast */}
       {errorMessage && (
         <div className="error-toast-game">{errorMessage}</div>
+      )}
+
+      {/* Swap announcement (shown to all players except the swapper) */}
+      {swapAnnouncement && swapAnnouncement.swapperPlayerId !== myPlayerId && (
+        <div className="swap-announcement-banner">
+          {HE.SWAP_ANNOUNCEMENT(
+            swapAnnouncement.swapperName,
+            swapAnnouncement.myPositionLabel,
+            swapAnnouncement.targetPlayerName,
+            swapAnnouncement.targetPositionLabel,
+          )}
+        </div>
       )}
 
       {/* Peek reveal overlay */}

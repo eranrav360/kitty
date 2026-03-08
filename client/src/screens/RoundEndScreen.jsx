@@ -14,6 +14,11 @@ export default function RoundEndScreen() {
   // Sort cumulative by lowest score first (best = first)
   const sortedCumulative = [...cumulativeScores].sort((a, b) => a.totalScore - b.totalScore);
 
+  // Round winner = lowest round score
+  const roundWinner = [...players].sort((a, b) => a.roundScore - b.roundScore)[0];
+  // Overall leader = lowest cumulative score
+  const overallLeader = sortedCumulative[0];
+
   function handleNextRound() {
     socket.emit('startNextRound', { roomCode });
   }
@@ -21,6 +26,24 @@ export default function RoundEndScreen() {
   return (
     <div className="score-screen">
       <h2 className="round-end-title">{HE.ROUND_OF(currentRound, totalRounds)}</h2>
+
+      {/* Round winner hero banner */}
+      {roundWinner && (
+        <div className="round-winner-banner">
+          <span className="round-winner-icon">🏆</span>
+          <span className="round-winner-name">{roundWinner.name}</span>
+          <span className="round-winner-score">{HE.ROUND_WINNER_LABEL} {HE.POINTS(roundWinner.roundScore)}</span>
+        </div>
+      )}
+
+      {/* Overall leader banner */}
+      {overallLeader && (
+        <div className="round-leader-banner">
+          <span className="round-leader-icon">⭐</span>
+          <span className="round-leader-name">{overallLeader.name}</span>
+          <span className="round-leader-score">{HE.OVERALL_LEADER_LABEL} {HE.POINTS(overallLeader.totalScore)}</span>
+        </div>
+      )}
 
       {/* This round's results with card reveal */}
       <div className="round-section-label">{HE.ROUND_SCORES}</div>

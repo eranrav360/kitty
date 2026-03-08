@@ -43,6 +43,11 @@ export function useSocket(dispatch) {
       dispatch({ type: ACTION_TYPES.GAME_ENDED, payload: data });
     });
 
+    socket.on('swapAnnouncement', (data) => {
+      dispatch({ type: ACTION_TYPES.SET_SWAP_ANNOUNCEMENT, payload: data });
+      setTimeout(() => dispatch({ type: ACTION_TYPES.CLEAR_SWAP_ANNOUNCEMENT }), 5000);
+    });
+
     socket.on('errorOccurred', ({ message }) => {
       dispatch({ type: ACTION_TYPES.SET_ERROR, payload: message });
       setTimeout(() => dispatch({ type: ACTION_TYPES.CLEAR_ERROR }), 3000);
@@ -64,6 +69,7 @@ export function useSocket(dispatch) {
       socket.off('rataCalled');
       socket.off('roundEnded');
       socket.off('gameEnded');
+      socket.off('swapAnnouncement');
       socket.off('errorOccurred');
     };
   }, [dispatch]);
