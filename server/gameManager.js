@@ -428,6 +428,14 @@ function handleDiscardDrawn(io, socket, { roomCode }) {
   // If it's a power card, activate it instead of just discarding
   if (card.type !== CARD_TYPES.NUMBER) {
     room.turnPhase = TURN_PHASES.USING_POWER;
+
+    // Tell everyone which power card is being used
+    io.to(room.roomCode).emit('powerAnnouncement', {
+      playerName: currentPlayer.name,
+      playerId: currentPlayer.playerId,
+      cardType: card.type,
+    });
+
     broadcastState(io, room);
     return;
   }
@@ -498,8 +506,8 @@ function handleUseSwap(io, socket, { roomCode, myHandIndex, targetPlayerId, targ
 
   // The swapper knows what they received (they chose the target card)
   theirCard.knownBy.add(currentPlayer.playerId);
-  // The target player now has your card — they don't automatically know it
-  // (they didn't see it), so we don't add their playerId to myCard.knownBy
+  // The target player now has the swapper's card — mark it as known to them
+  myCard.knownBy.add(targetPlayer.playerId);
 
   // Discard the power card
   room.discardPile.push(room.drawnCard);

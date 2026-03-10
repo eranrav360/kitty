@@ -45,7 +45,14 @@ export function useSocket(dispatch) {
 
     socket.on('swapAnnouncement', (data) => {
       dispatch({ type: ACTION_TYPES.SET_SWAP_ANNOUNCEMENT, payload: data });
-      setTimeout(() => dispatch({ type: ACTION_TYPES.CLEAR_SWAP_ANNOUNCEMENT }), 5000);
+      // Fallback: clear after 60 s in case the game stalls
+      setTimeout(() => dispatch({ type: ACTION_TYPES.CLEAR_SWAP_ANNOUNCEMENT }), 60_000);
+    });
+
+    socket.on('powerAnnouncement', (data) => {
+      dispatch({ type: ACTION_TYPES.SET_POWER_ANNOUNCEMENT, payload: data });
+      // Fallback: clear after 30 s
+      setTimeout(() => dispatch({ type: ACTION_TYPES.CLEAR_POWER_ANNOUNCEMENT }), 30_000);
     });
 
     socket.on('errorOccurred', ({ message }) => {
@@ -70,6 +77,7 @@ export function useSocket(dispatch) {
       socket.off('roundEnded');
       socket.off('gameEnded');
       socket.off('swapAnnouncement');
+      socket.off('powerAnnouncement');
       socket.off('errorOccurred');
     };
   }, [dispatch]);

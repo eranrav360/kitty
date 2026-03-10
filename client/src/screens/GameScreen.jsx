@@ -11,9 +11,22 @@ import ActionPanel from '../components/ActionPanel';
 import PowerCardModal from '../components/PowerCardModal';
 import RataButton from '../components/RataButton';
 
+// Mini card-back used inside the swap announcement graphic
+function MiniCardBack({ label }) {
+  return (
+    <div className="swap-ann-card-slot">
+      <div className="swap-ann-card-back">🐶</div>
+      <div className="swap-ann-pos">{label}</div>
+    </div>
+  );
+}
+
 export default function GameScreen() {
   const { state, dispatch } = useGame();
-  const { players, myPlayerId, pendingAction, peekReveal, showRataConfirm, errorMessage, swapAnnouncement } = state;
+  const {
+    players, myPlayerId, pendingAction, peekReveal,
+    showRataConfirm, errorMessage, swapAnnouncement, powerAnnouncement,
+  } = state;
 
   const me = players.find(p => p.playerId === myPlayerId);
   const opponents = players.filter(p => p.playerId !== myPlayerId);
@@ -42,6 +55,13 @@ export default function GameScreen() {
     return () => clearInterval(timer);
   }, [peekReveal]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Power card label map (matches HE constants)
+  const powerCardLabel = {
+    PEEK:  HE.CARD_PEEK,
+    SWAP:  HE.CARD_SWAP,
+    DRAW2: HE.CARD_DRAW2,
+  };
+
   return (
     <div className="game-screen">
       {/* Turn indicator */}
@@ -52,15 +72,31 @@ export default function GameScreen() {
         <div className="error-toast-game">{errorMessage}</div>
       )}
 
-      {/* Swap announcement (shown to all players except the swapper) */}
-      {swapAnnouncement && swapAnnouncement.swapperPlayerId !== myPlayerId && (
-        <div className="swap-announcement-banner">
-          {HE.SWAP_ANNOUNCEMENT(
-            swapAnnouncement.swapperName,
-            swapAnnouncement.myPositionLabel,
-            swapAnnouncement.targetPlayerName,
-            swapAnnouncement.targetPositionLabel,
+      {/* Power card announcement (shown to all while power is being used) */}
+      {powerAnnouncement && (
+        <div className="power-announcement-banner">
+          {HE.POWER_ANNOUNCEMENT(
+            powerAnnouncement.playerName,
+            powerCardLabel[powerAnnouncement.cardType] ?? powerAnnouncement.cardType,
           )}
+        </div>
+      )}
+
+      {/* Swap announcement — visual panel shown to all players except the swapper */}
+      {swapAnnouncement && swapAnnouncement.swapperPlayerId !== myPlayerId && (
+        <div className="swap-announcement-panel">
+          <div className="swap-ann-title">{HE.SWAP_ANNOUNCEMENT_TITLE}</div>
+          <div className="swap-ann-body">
+            <div className="swap-ann-side">
+              <div className="swap-ann-name">{swapAnnouncement.swapperName}</div>
+              <MiniCardBack label={swapAnnouncement.myPositionLabel} />
+            </div>
+            <div className="swap-ann-arrows">⇄</div>
+            <div className="swap-ann-side">
+              <div className="swap-ann-name">{swapAnnouncement.targetPlayerName}</div>
+              <MiniCardBack label={swapAnnouncement.targetPositionLabel} />
+            </div>
+          </div>
         </div>
       )}
 

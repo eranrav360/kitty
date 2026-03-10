@@ -22,6 +22,8 @@ export const ACTION_TYPES = {
   RESET_TO_LOBBY: 'RESET_TO_LOBBY',
   SET_SWAP_ANNOUNCEMENT: 'SET_SWAP_ANNOUNCEMENT',
   CLEAR_SWAP_ANNOUNCEMENT: 'CLEAR_SWAP_ANNOUNCEMENT',
+  SET_POWER_ANNOUNCEMENT: 'SET_POWER_ANNOUNCEMENT',
+  CLEAR_POWER_ANNOUNCEMENT: 'CLEAR_POWER_ANNOUNCEMENT',
 };
 
 export const initialState = {
@@ -55,7 +57,12 @@ export const initialState = {
   swapSelection: null,   // { myHandIndex } — first step of swap
   showRataConfirm: false,
   errorMessage: null,
-  swapAnnouncement: null,  // { swapperName, swapperPlayerId, myPositionLabel, targetPlayerName, targetPositionLabel }
+
+  // Announcements
+  swapAnnouncement: null,           // { swapperName, swapperPlayerId, myPositionLabel, targetPlayerName, targetPositionLabel }
+  swapAnnouncementWatchPlayerId: null, // cleared when THIS player's turn ends
+  powerAnnouncement: null,          // { playerName, playerId, cardType }
+
   isConnected: false,
 
   // Lobby waiting room players list
@@ -84,7 +91,33 @@ export function gameReducer(state, action) {
     case ACTION_TYPES.SET_WAITING_PLAYERS:
       return { ...state, waitingPlayers: action.payload };
 
-    case ACTION_TYPES.GAME_STATE_UPDATED:
+    case ACTION_TYPES.GAME_STATE_UPDATED: {
+      // --- Turn-based announcement clearing ---
+      // When the turn player changes, advance the swap-announcement lifecycle:
+      //   • 1st GAME_STATE_UPDATED after SET_SWAP_ANNOUNCEMENT → record who is now playing
+      //   • 2nd change (that recorded player's turn ends) → clear the announcement
+      const newCurrentPlayer = action.payload.players?.find(p => p.isCurrentTurn);
+      const newCurrentId = newCurrentPlayer?.playerId ?? null;
+
+      let swapAnn = state.swapAnnouncement;
+      let watchId = state.swapAnnouncementWatchPlayerId;
+      if (swapAnn && newCurrentId) {
+        if (!watchId) {
+          // First update after the swap — remember who is playing next
+          watchId = newCurrentId;
+        } else if (newCurrentId !== watchId) {
+          // Watched player's turn ended — clear
+          swapAnn = null;
+          watchId = null;
+        }
+      }
+
+      // Clear power announcement when the announcing player's turn ends
+      let powerAnn = state.powerAnnouncement;
+      if (powerAnn && newCurrentId && newCurrentId !== powerAnn.playerId) {
+        powerAnn = null;
+      }
+
       return {
         ...state,
         phase: action.payload.phase,
@@ -100,7 +133,11 @@ export function gameReducer(state, action) {
         currentRound: action.payload.currentRound ?? state.currentRound,
         totalRounds: action.payload.totalRounds ?? state.totalRounds,
         roundState: null,
+        swapAnnouncement: swapAnn,
+        swapAnnouncementWatchPlayerId: watchId,
+        powerAnnouncement: powerAnn,
       };
+    }
 
     case ACTION_TYPES.CARD_DRAWN:
       return { ...state, drawnCard: action.payload };
@@ -155,10 +192,17 @@ export function gameReducer(state, action) {
       return { ...initialState, isConnected: state.isConnected };
 
     case ACTION_TYPES.SET_SWAP_ANNOUNCEMENT:
-      return { ...state, swapAnnouncement: action.payload };
+      // Reset watch ID so GAME_STATE_UPDATED knows to capture the next player
+      return { ...state, swapAnnouncement: action.payload, swapAnnouncementWatchPlayerId: null };
 
     case ACTION_TYPES.CLEAR_SWAP_ANNOUNCEMENT:
-      return { ...state, swapAnnouncement: null };
+      return { ...state, swapAnnouncement: null, swapAnnouncementWatchPlayerId: null };
+
+    case ACTION_TYPES.SET_POWER_ANNOUNCEMENT:
+      return { ...state, powerAnnouncement: action.payload };
+
+    case ACTION_TYPES.CLEAR_POWER_ANNOUNCEMENT:
+      return { ...state, powerAnnouncement: null };
 
     default:
       return state;
