@@ -77,6 +77,10 @@ function endGame(io, room) {
     room.cumulativeScores[playerId] = (room.cumulativeScores[playerId] || 0) + score;
   });
 
+  // Remember who won this round — they'll go first in the next round
+  const roundWinner = roundScores.reduce((best, curr) => curr.score < best.score ? curr : best);
+  room.nextRoundStarterPlayerId = roundWinner.playerId;
+
   // Build revealed hands for display
   const players = room.players.map(player => ({
     playerId: player.playerId,
@@ -239,12 +243,8 @@ function startGame(io, socket, { roomCode }) {
   room.players.forEach((p, i) => { p.hand = hands[i]; });
   room.deck = deck;
 
-  // Flip top card of remaining deck to start discard pile
-  room.discardPile = [room.deck.shift()];
-  // If the first discard card is a power card, keep drawing until we get a number card
-  while (room.discardPile[room.discardPile.length - 1].type !== CARD_TYPES.NUMBER && room.deck.length > 0) {
-    room.discardPile.push(room.deck.shift());
-  }
+  // Discard pile starts empty — first player must draw from the deck
+  room.discardPile = [];
 
   room.phase = PHASES.INITIAL_PEEK;
   room.currentPlayerIndex = 0;
@@ -280,14 +280,20 @@ function startNextRound(io, socket, { roomCode }) {
   room.players.forEach((p, i) => { p.hand = hands[i]; });
   room.deck = deck;
 
-  room.discardPile = [room.deck.shift()];
-  while (room.discardPile[room.discardPile.length - 1].type !== CARD_TYPES.NUMBER && room.deck.length > 0) {
-    room.discardPile.push(room.deck.shift());
-  }
+  // Discard pile starts empty — first player must draw from the deck
+  room.discardPile = [];
 
   room.phase = PHASES.INITIAL_PEEK;
   room.turnPhase = TURN_PHASES.IDLE;
-  room.currentPlayerIndex = 0;
+
+  // Last round's winner goes first; fall back to player 0 if not set
+  let startIndex = 0;
+  if (room.nextRoundStarterPlayerId) {
+    const idx = room.players.findIndex(p => p.playerId === room.nextRoundStarterPlayerId);
+    if (idx !== -1) startIndex = idx;
+    room.nextRoundStarterPlayerId = null;
+  }
+  room.currentPlayerIndex = startIndex;
 
   emitToAll(io, room, 'gameStarted', (pid) => buildClientState(room, pid));
 }
